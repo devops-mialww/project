@@ -1,0 +1,25 @@
+metadata:
+  id: "CKV2_FCRUD_2"
+  name: "docker_container must set a non-root user"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: user
+      operator: exists
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: user
+      operator: not_within
+      value: ["root", "0"]
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: user
+      operator: not_starting_with
+      value: "root:"
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: user
+      operator: not_starting_with
+      value: "0:"

@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_FCRUD_7"
+  name: "docker_container must set no-new-privileges"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types: [docker_container]
+  attribute: security_opts
+  operator: contains
+  value: "no-new-privileges:true"

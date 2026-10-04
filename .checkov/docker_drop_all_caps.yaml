@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_FCRUD_6"
+  name: "docker_container must drop all Linux capabilities"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types: [docker_container]
+  attribute: capabilities.drop
+  operator: contains
+  value: ALL

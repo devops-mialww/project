@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pipx install poetry
+      - uses: actions/setup-python@v7
+        with:
+          python-version-file: .python-version
+          cache: poetry
+      - run: poetry install
+      - run: poetry run pytest
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t fastapi-crud:ci .
+
+  checkov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pipx install poetry
+      - uses: actions/setup-python@v7
+        with:
+          python-version-file: .python-version
+          cache: poetry
+      - run: poetry install --only security
+      - name: Scan Dockerfile and Terraform
+        run: poetry run checkov
+      - name: Custom policies pass on good fixture
+        working-directory: .checkov/tests
+        run: poetry run checkov -d good --framework terraform --external-checks-dir .. --compact
+      - name: Custom policies all fail on bad fixture
+        working-directory: .checkov/tests
+        run: |
+          out=$(poetry run checkov -d bad --framework terraform --external-checks-dir .. --compact || true)
+          echo "$out"
+          grep -qE "Passed checks: 0, Failed checks: [1-9]" <<< "$out"

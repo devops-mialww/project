@@ -1,0 +1,9 @@
+metadata:
+  id: "CKV2_FCRUD_5"
+  name: "docker_container must set a memory limit"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types: [docker_container]
+  attribute: memory
+  operator: exists

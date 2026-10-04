@@ -1,3 +1,4 @@
+import uuid
 import app.schemas as schemas
 import app.models as models
 from sqlalchemy.orm import Session
@@ -43,7 +44,7 @@ def create_user(payload: schemas.UserBaseSchema, db: Session = Depends(get_db)):
 @router.get(
     "/{userId}", status_code=status.HTTP_200_OK, response_model=schemas.GetUserResponse
 )
-def get_user(userId: str, db: Session = Depends(get_db)):
+def get_user(userId: uuid.UUID, db: Session = Depends(get_db)):
     user_query = db.query(models.User).filter(models.User.id == userId)
     db_user = user_query.first()
 
@@ -70,7 +71,7 @@ def get_user(userId: str, db: Session = Depends(get_db)):
     response_model=schemas.UserResponse,
 )
 def update_user(
-    userId: str, payload: schemas.UserBaseSchema, db: Session = Depends(get_db)
+    userId: uuid.UUID, payload: schemas.UserBaseSchema, db: Session = Depends(get_db)
 ):
     user_query = db.query(models.User).filter(models.User.id == userId)
     db_user = user_query.first()
@@ -107,7 +108,7 @@ def update_user(
     status_code=status.HTTP_202_ACCEPTED,
     response_model=schemas.DeleteUserResponse,
 )
-def delete_user(userId: str, db: Session = Depends(get_db)):
+def delete_user(userId: uuid.UUID, db: Session = Depends(get_db)):
     try:
         user_query = db.query(models.User).filter(models.User.id == userId)
         user = user_query.first()
