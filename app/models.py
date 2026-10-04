@@ -1,14 +1,13 @@
 from app.database import Base
-from sqlalchemy import TIMESTAMP, Column, String, Boolean
+from sqlalchemy import TIMESTAMP, Column, String, Boolean, Uuid
 from sqlalchemy.sql import func
-from sqlalchemy_utils import UUIDType
 import uuid
 
 class User(Base):
     __tablename__ = "users"
 
     # Primary key and GUID type
-    id = Column(UUIDType(binary=False), primary_key=True, default=uuid.uuid4)
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4)
 
     # String types with appropriate non-null constraints
     first_name = Column(

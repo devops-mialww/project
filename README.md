@@ -15,14 +15,14 @@ This project follows a clean architecture pattern, separating concerns to enhanc
 ## Getting Started
 
 ### Prerequisites and Dependencies
-- Python 3.12
+- Python 3.14
 - FastAPI
 - SQLite
 - Uvicorn (for running the server)
 
 #### Poetry
 
-This project uses [Poetry](https://python-poetry.org/) for dependency management. 
+This project uses [Poetry](https://python-poetry.org/) 2.x for dependency management. 
 
 If you're not familiar with Poetry, please follow [these instructions](https://python-poetry.org/docs/#installation) to install it.
 
@@ -35,15 +35,7 @@ $ poetry install
 Then run the below command to activate the virtual environment.
 
 ```shell
-$ poetry shell
-```
-
-#### Pip
-
-If you prefer using `pip`, you can create a virtual environment and then install the dependencies using the following command:
-
-```shell
-$ pip install -r requirements.txt
+$ eval $(poetry env activate)
 ```
 
 ## How To Run the Server

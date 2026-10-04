@@ -1,0 +1,6 @@
+directory: [.]
+framework: [dockerfile, terraform]
+external-checks-dir: [.checkov]
+# Fixtures are insecure on purpose; CI tests them separately
+skip-path: [.checkov/tests]
+compact: true

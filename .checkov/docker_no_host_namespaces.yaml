@@ -1,0 +1,21 @@
+metadata:
+  id: "CKV2_FCRUD_3"
+  name: "docker_container must not share the host network, PID or IPC namespace"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: network_mode
+      operator: not_equals
+      value: host
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: pid_mode
+      operator: not_equals
+      value: host
+    - cond_type: attribute
+      resource_types: [docker_container]
+      attribute: ipc_mode
+      operator: not_equals
+      value: host

@@ -1,23 +1,23 @@
-[tool.poetry]
+[project]
 name = "user-service-example"
 version = "0.1.0"
 description = "A simple user service example"
-authors = ["ericsalesdeandrade <sdaeric19@gmail.com>"]
+authors = [{ name = "ericsalesdeandrade", email = "sdaeric19@gmail.com" }]
 readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = ["fastapi (>=0.142.2,<0.143.0)", "uvicorn (>=0.54.0,<0.55.0)", "pydantic (>=2.13.5,<3.0.0)", "sqlalchemy (>=2.1.3,<3.0.0)"]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = "0.110.3"
-uvicorn = "^0.29.0"
-pydantic = "^2.7.1"
-httpx = "^0.27.0"
-sqlalchemy-utils = "^0.41.2"
+[tool.poetry]
+package-mode = false
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.1.1"
+pytest-randomly = "^5.0.0"
+httpx = "^0.28.1"
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.2.0"
-pytest-randomly = "^3.15.0"
+[tool.poetry.group.security]
+optional = true
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.group.security.dependencies]
+checkov = "^3.3.22"
+
