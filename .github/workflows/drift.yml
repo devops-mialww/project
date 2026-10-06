@@ -1,0 +1,37 @@
+name: Drift detection
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Shared with cd.yml so a plan never runs during an apply
+concurrency:
+  group: terraform
+
+env:
+  STATE_DIR: ${{ vars.STATE_DIR || '/var/lib/fastapi-crud' }}
+
+jobs:
+  plan:
+    runs-on: [self-hosted, linux]
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      # Compare against the deployed commit, not main, so an undeployed commit is not reported as drift
+      - id: deployed
+        working-directory: .
+        run: echo "sha=$(cat "$STATE_DIR/deployed-sha")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.deployed.outputs.sha }}
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+      - run: terraform init -input=false -backend-config="path=$STATE_DIR/terraform.tfstate"
+      # Exit code 2 means the running container differs from the code, which fails the job
+      - run: terraform plan -input=false -detailed-exitcode -var "image_tag=${{ steps.deployed.outputs.sha }}"
