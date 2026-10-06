@@ -39,6 +39,7 @@ jobs:
           dir="$RUNNER_TOOL_CACHE/terraform/$TERRAFORM_VERSION"
           if [ ! -x "$dir/terraform" ]; then
             curl -fsSLo "$RUNNER_TEMP/terraform.zip" "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+            mkdir -p "$dir"
             unzip -o "$RUNNER_TEMP/terraform.zip" terraform -d "$dir"
           fi
           echo "$dir" >> "$GITHUB_PATH"
