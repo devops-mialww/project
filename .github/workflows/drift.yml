@@ -13,6 +13,7 @@ concurrency:
   group: terraform
 
 env:
+  TERRAFORM_VERSION: "1.16.5"
   STATE_DIR: ${{ vars.STATE_DIR || '/var/lib/fastapi-crud' }}
 
 jobs:
@@ -29,9 +30,15 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ steps.deployed.outputs.sha }}
-      - uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_wrapper: false
+      # Only GitHub-owned actions are allowed in this repo, so Terraform is downloaded directly
+      - name: Install Terraform
+        run: |
+          dir="$RUNNER_TOOL_CACHE/terraform/$TERRAFORM_VERSION"
+          if [ ! -x "$dir/terraform" ]; then
+            curl -fsSLo "$RUNNER_TEMP/terraform.zip" "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+            unzip -o "$RUNNER_TEMP/terraform.zip" terraform -d "$dir"
+          fi
+          echo "$dir" >> "$GITHUB_PATH"
       - run: terraform init -input=false -backend-config="path=$STATE_DIR/terraform.tfstate"
       # Exit code 2 means the running container differs from the code, which fails the job
       - run: terraform plan -input=false -detailed-exitcode -var "image_tag=${{ steps.deployed.outputs.sha }}"
