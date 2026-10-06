@@ -48,4 +48,4 @@ jobs:
       # Drift detection checks the container against the commit it was deployed from
       - run: echo "$DEPLOY_SHA" > "$STATE_DIR/deployed-sha"
       - name: Smoke test
-        run: curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:8000/api/healthchecker
+        run: curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-all-errors http://127.0.0.1:8000/api/healthchecker
