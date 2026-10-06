@@ -1,0 +1,43 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Shared with drift.yml so a plan never runs during an apply
+concurrency:
+  group: terraform
+
+env:
+  STATE_DIR: ${{ vars.STATE_DIR || '/var/lib/fastapi-crud' }}
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  deploy:
+    # The branch filter also matches fork PRs from a branch named main, so require a push
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: [self-hosted, linux]
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+      - run: terraform init -input=false -backend-config="path=$STATE_DIR/terraform.tfstate"
+      - run: terraform apply -input=false -auto-approve -var "image_tag=$DEPLOY_SHA"
+      # Drift detection checks the container against the commit it was deployed from
+      - run: echo "$DEPLOY_SHA" > "$STATE_DIR/deployed-sha"
+      - name: Smoke test
+        run: curl --fail --silent --show-error --retry 10 --retry-delay 2 --retry-connrefused http://127.0.0.1:8000/api/healthchecker

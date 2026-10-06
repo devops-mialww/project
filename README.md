@@ -112,3 +112,59 @@ $ pytest
 This will spin up a test database in SQLite `test_db.db`, run the tests and then tear down the database. 
 
 You can use `pytest -v` for verbose output and `pytest -s` to disable output capture for better debugging.
+
+## DevOps Pipeline
+
+The application is kept simple on purpose. The work is in the pipeline around it, which checks the infrastructure code as well as the application code.
+
+| Part | Where | What it does |
+| --- | --- | --- |
+| CI | `.github/workflows/ci.yml` | Runs pytest, builds the Docker image and runs Checkov on every push and pull request. |
+| IaC | `terraform/` | Declares the app container, its image and its data volume with the Terraform Docker provider. |
+| Security scanning | `.checkov/`, `.checkov.yaml` | Checkov scans the Dockerfile and the Terraform files, including seven custom policies for `docker_container`. |
+| CD | `.github/workflows/cd.yml` | After CI succeeds on `main`, runs `terraform apply` on a self-hosted runner. |
+| Drift detection | `.github/workflows/drift.yml` | Runs `terraform plan` every hour and fails if the running container differs from the code. |
+| Dependencies | `.github/dependabot.yml` | Dependabot updates Python packages, GitHub Actions, the base image and the Terraform provider. |
+
+### How To Run the Container with Terraform
+
+You need Docker and Terraform 1.9 or newer.
+
+```shell
+$ cd terraform
+$ terraform init
+$ terraform apply
+```
+
+This builds the image from the `Dockerfile` and starts the container at `http://127.0.0.1:8000`. The container runs as a non-root user with a read-only root filesystem, a memory limit, no Linux capabilities and `no-new-privileges`. The SQLite database is stored in the Docker volume `fastapi-crud-data`, so it survives when the container is replaced.
+
+Run `terraform destroy` to remove the container and the volume.
+
+### How To Run Checkov
+
+```shell
+$ poetry install --only security
+$ poetry run checkov
+```
+
+### Continuous Deployment
+
+CD runs on a self-hosted GitHub Actions runner, so the container keeps running after the workflow ends. The runner needs Linux, Docker, `unzip`, `curl` and a directory for the Terraform state:
+
+```shell
+$ sudo mkdir -p /var/lib/fastapi-crud && sudo chown $USER /var/lib/fastapi-crud
+```
+
+The state is kept outside the repository checkout because the runner cleans the checkout on every run. Set the repository variable `STATE_DIR` to use another directory.
+
+Each deploy tags the image with the commit SHA, applies the Terraform code and then calls `/api/healthchecker`. The self-hosted jobs only run for pushes to `main`, never for pull requests.
+
+### Drift Detection
+
+The drift workflow runs `terraform plan -detailed-exitcode` against the commit that was last deployed. The job fails when the plan contains a change, for example after someone edits or removes the container by hand. To try it:
+
+```shell
+$ docker update --memory 512m --memory-swap 512m fastapi-crud
+```
+
+Then start the "Drift detection" workflow from the Actions tab. It fails and shows the memory change in the plan. Run the CD workflow again to bring the container back in line with the code.
