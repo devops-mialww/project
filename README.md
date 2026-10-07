@@ -117,6 +117,8 @@ You can use `pytest -v` for verbose output and `pytest -s` to disable output cap
 
 The application is kept simple on purpose. The work is in the pipeline around it, which checks the infrastructure code as well as the application code.
 
+The architecture, design decisions and limitations are described in the [report](REPORT.md). How AI-assisted tools were used is documented in [AI_USAGE.md](AI_USAGE.md).
+
 | Part | Where | What it does |
 | --- | --- | --- |
 | CI | `.github/workflows/ci.yml` | Runs pytest, builds the Docker image and runs Checkov on every push and pull request. |
